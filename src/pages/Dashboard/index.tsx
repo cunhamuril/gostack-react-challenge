@@ -32,29 +32,28 @@ interface Balance {
 
 const Dashboard: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [balance, setBalance] = useState<Balance | null>(null);
+  const [balance, setBalance] = useState<Balance>({} as Balance);
 
   useEffect(() => {
     async function loadTransactions(): Promise<void> {
-      api
-        .get('/transactions')
-        .then(response => {
-          const { data } = response;
+      try {
+        const { data } = await api.get('/transactions');
 
-          const formattedTransactions = data.transactions.map(
-            (transaction: Transaction) => {
-              return {
-                ...transaction,
-                formattedValue: formatValue(transaction.value),
-                formattedDate: formatDate(transaction.created_at),
-              };
-            },
-          );
+        const formattedTransactions = data.transactions.map(
+          (transaction: Transaction) => {
+            return {
+              ...transaction,
+              formattedValue: formatValue(transaction.value),
+              formattedDate: formatDate(transaction.created_at),
+            };
+          },
+        );
 
-          setTransactions(formattedTransactions);
-          setBalance(data.balance);
-        })
-        .catch(err => console.error(err)); //eslint-disable-line
+        setTransactions(formattedTransactions);
+        setBalance(data.balance);
+      } catch (error) {
+        console.error(error.response); //eslint-disable-line
+      }
     }
 
     loadTransactions();
@@ -110,7 +109,11 @@ const Dashboard: React.FC = () => {
                 {transactions.map(transaction => (
                   <tr key={transaction.id}>
                     <td className="title">{transaction.title}</td>
-                    <td className="income">{transaction.formattedValue}</td>
+                    <td className={transaction.type}>
+                      {transaction.type === 'outcome'
+                        ? `- ${transaction.formattedValue}`
+                        : transaction.formattedValue}
+                    </td>
                     <td>{transaction.category.title}</td>
                     <td>{transaction.formattedDate}</td>
                   </tr>
