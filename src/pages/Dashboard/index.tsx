@@ -51,8 +51,8 @@ const Dashboard: React.FC = () => {
 
         setTransactions(formattedTransactions);
         setBalance(data.balance);
-      } catch (error) {
-        console.error(error.response); //eslint-disable-line
+      } catch (err) {
+        console.error(err.response.error); //eslint-disable-line
       }
     }
 
